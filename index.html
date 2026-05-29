@@ -645,9 +645,15 @@ textarea.form-control{min-height:80px;resize:vertical;line-height:1.6;}
     </div>
   </div>
 
+  <!-- RELANCES RDV SEMAINE PASSÉE -->
+  <div style="margin-bottom:20px;">
+    <div class="today-section-title">📞 À relancer — RDV récents (3–14 jours)</div>
+    <div id="today-relances-rdv"></div>
+  </div>
+
   <!-- RELANCES URGENTES -->
   <div style="margin-bottom:20px;">
-    <div class="today-section-title">🔔 Relances urgentes</div>
+    <div class="today-section-title">🔔 Relances urgentes pipeline</div>
     <div id="today-relances"></div>
   </div>
 
@@ -817,9 +823,10 @@ textarea.form-control{min-height:80px;resize:vertical;line-height:1.6;}
 <!-- PIPELINE -->
 <div class="page" id="page-pipeline">
   <div class="ph-row page-header">
-    <div><h2>Pipeline Ventes</h2><p>Suivi de vos opportunités</p></div>
+    <div><h2>Pipeline Ventes</h2><p>Suivi de vos opportunités actives</p></div>
     <button class="btn btn-primary" onclick="openVenteModal()">+ Nouvelle opportunité</button>
   </div>
+  <div id="pipeline-toolbar" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;"></div>
   <div class="pipeline" id="pipeline-cols"></div>
 </div>
 
@@ -884,7 +891,7 @@ textarea.form-control{min-height:80px;resize:vertical;line-height:1.6;}
   <div class="ph-row page-header">
     <div>
       <h2>🧾 Comptabilité — Jérémy Caron</h2>
-      <p>Les ventes <strong>Vendues</strong> du pipeline s'affichent automatiquement ici</p>
+      <p>Ajoute une vente → lie-la à un client du pipeline pour le passer à <strong>Vendu</strong> automatiquement</p>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn btn-ghost btn-sm" onclick="imprimerCompta()">🖨️ Rapport boss</button>
@@ -967,6 +974,50 @@ textarea.form-control{min-height:80px;resize:vertical;line-height:1.6;}
           <td colspan="5"></td>
         </tr></tfoot>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJOUTER VENTE COMPTABILITÉ -->
+<div class="modal-overlay" id="modal-compta-vente">
+  <div class="modal" style="width:540px;">
+    <div class="modal-header">
+      <h3>➕ Nouvelle vente — Comptabilité</h3>
+      <button class="modal-close" onclick="closeModal('modal-compta-vente')">×</button>
+    </div>
+    <div style="background:rgba(52,199,89,.07);border:1px solid rgba(52,199,89,.25);border-radius:10px;padding:11px 14px;margin-bottom:16px;font-size:12.5px;color:#1d8a3a;">
+      💡 Si ce client est dans le pipeline, sélectionne-le ci-dessous — il passera automatiquement à <strong>Vendu</strong>
+    </div>
+    <div class="form-group" style="position:relative;">
+      <label class="form-label">🔗 Lier à un client du pipeline <span style="font-weight:400;color:var(--text3);">(optionnel)</span></label>
+      <input class="form-control" id="cv-pipeline-search" placeholder="Chercher dans le pipeline..." oninput="cvPipelineSearch(this.value)" autocomplete="off"/>
+      <div id="cv-pipeline-dd" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:9999;background:#fff;border:1px solid var(--border2);border-radius:var(--r);max-height:200px;overflow-y:auto;box-shadow:var(--sh3);margin-top:3px;"></div>
+      <input type="hidden" id="cv-pipeline-id"/>
+    </div>
+    <div id="cv-pipeline-badge" style="display:none;background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#1d8a3a;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+      <span id="cv-pipeline-badge-text">✅ Client lié</span>
+      <button onclick="cvClearPipeline()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;line-height:1;">×</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Date</label><input class="form-control" id="cv-date" placeholder="ex: 15-mai"/></div>
+      <div class="form-group"><label class="form-label">No. devis</label><input class="form-control" id="cv-contrat" placeholder="ex: 60450"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Client</label><input class="form-control" id="cv-client" placeholder="Nom, Prénom"/></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Produit</label><input class="form-control" id="cv-produit" placeholder="ex: Auvent garage"/></div>
+      <div class="form-group"><label class="form-label">Source</label><input class="form-control" id="cv-source-modal" placeholder="ex: Internet"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Total (av. tx)</label><input class="form-control" id="cv-total" placeholder="0,00"/></div>
+      <div class="form-group"><label class="form-label">Installation</label><input class="form-control" id="cv-instal" placeholder="-"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">% Commission</label><input class="form-control" id="cv-pct" value="9" placeholder="9"/></div>
+      <div class="form-group"><label class="form-label">Montant payé</label><input class="form-control" id="cv-paye" placeholder="0,00"/></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-compta-vente')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveComptaVente()">✅ Ajouter la vente</button>
     </div>
   </div>
 </div>
@@ -1733,6 +1784,7 @@ function renderAujourdhui() {
   const tachesHaute = state.taches.filter(t => t.statut !== 'Fait' && t.priorite === 'Haute' && !t.date).slice(0,3);
   const allTaches = [...tachesAujourdhui, ...tachesHaute.filter(t => !tachesAujourdhui.find(x=>x.id===t.id))];
   const relancesUrgentes = state.ventes.filter(v => {
+    if(v.archived) return false;
     if(!ETAPES_AVANT_CONTRAT.includes(v.etape)) return false;
     return !v.relance1 && getJoursDansPipeline(v) >= 7;
   }).sort((a,b) => getJoursDansPipeline(b)-getJoursDansPipeline(a)).slice(0,5);
@@ -1806,6 +1858,38 @@ function renderAujourdhui() {
       <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openTacheModal(${t.id})">✏️</button>
     </div>`;
   }).join('') : `<div class="today-empty"><div class="today-empty-icon">✅</div><p>Aucune tâche urgente !</p></div>`;
+
+  // Relances RDV récents (3–14 jours passés, pas encore fermés)
+  const rdvRecentEl = document.getElementById('today-relances-rdv');
+  if(rdvRecentEl) {
+    const rdvRecents = state.ventes.filter(v => {
+      if(v.archived || v.etape==='Vendu' || v.etape==='Perdu') return false;
+      if(!v.date) return false;
+      const rdvD = new Date(v.date+'T00:00:00');
+      const jours = Math.floor((today - rdvD) / 86400000);
+      return jours >= 3 && jours <= 14;
+    }).sort((a,b) => new Date(a.date) - new Date(b.date));
+    if(rdvRecents.length) {
+      rdvRecentEl.innerHTML = `<div class="table-wrap"><table><thead><tr>
+        <th>CLIENT</th><th>DATE RDV</th><th>ÉTAPE</th><th>TÉLÉPHONE</th><th>ACTION</th></tr></thead><tbody>
+        ${rdvRecents.map(v=>{
+          const c=v.contactId?state.clients.find(x=>x.id===v.contactId):null;
+          const tel=v.tel||(c?c.tel:'')||'—';
+          const rdvD=new Date(v.date+'T00:00:00');
+          const jours=Math.floor((today-rdvD)/86400000);
+          const urg=jours>=10?`<span style="color:var(--orange);font-weight:700;">🟠 ${jours}j passé</span>`:`<span style="color:#007aff;font-weight:600;">🔵 ${jours}j passé</span>`;
+          return `<tr onclick="showVenteDetail(${v.id})">
+            <td><strong>${v.nom}</strong>${c?`<div style="font-size:11px;color:var(--text2);">${c.prenom} ${c.nom}</div>`:''}</td>
+            <td style="font-size:12px;">${v.date} ${urg}</td>
+            <td><span class="badge ${ETAPE_BADGE[v.etape]||'b-nouveau'}">${v.etape}</span></td>
+            <td style="font-size:12px;">${tel}</td>
+            <td onclick="event.stopPropagation()">${tel!=='—'?`<a href="tel:${tel}" class="btn btn-primary btn-sm">📞 Appeler</a>`:'—'}</td>
+          </tr>`;
+        }).join('')}</tbody></table></div>`;
+    } else {
+      rdvRecentEl.innerHTML = `<div class="today-empty"><div class="today-empty-icon">📞</div><p>Aucun RDV des 14 derniers jours à relancer</p></div>`;
+    }
+  }
 
   // Relances
   const relEl = document.getElementById('today-relances');
@@ -2363,15 +2447,17 @@ function getJoursDansPipeline(v) {
   return Math.floor((now - baseDate) / 86400000);
 }
 function renderRelances() {
-  // Regular stage-based relances
+  // Regular stage-based relances (excl. archivés)
   const aRelancer = state.ventes.filter(v => {
+    if(v.archived) return false;
     if(!ETAPES_AVANT_CONTRAT.includes(v.etape)) return false;
     if(v.relance1) return false;
     return getJoursDansPipeline(v) >= 7;
   });
-  
-  // Post-RDV relances (5+ days after RDV date)
+
+  // Post-RDV relances (5+ days after RDV date, excl. archivés)
   const postRDV = state.ventes.filter(v => {
+    if(v.archived) return false;
     if(v.etape !== 'RDV terrain fixé' || !v.date) return false;
     const rdvDate = new Date(v.date);
     const now = new Date();
@@ -2541,10 +2627,44 @@ function togglePipeCol(etape){
   pipeAccordion[etape]=!pipeAccordion[etape];
   renderPipeline();
 }
+
+// ─── ARCHIVAGE AUTO PIPELINE ──────────────────────────────────────────────────
+let pipelineView = 'actifs'; // 'actifs' | 'archives'
+const ARCHIVE_DELAYS = {
+  'Vendu':30, 'Perdu':14,
+  'Contrat à relancer':45, 'Contrat envoyé':30,
+  'Nouveau lead':60, 'Estimation envoyée':60, 'RDV terrain fixé':60
+};
+function autoArchiveCheck() {
+  const today = new Date();
+  let changed = false;
+  (state.ventes||[]).forEach(v => {
+    if(v.archived) return;
+    const delai = ARCHIVE_DELAYS[v.etape] || 60;
+    const refDate = (v.etape==='Vendu' && v.dateVente) ? new Date(v.dateVente) :
+                    v.dateEtape ? new Date(v.dateEtape) : new Date(+v.id||Date.now());
+    if(isNaN(refDate)) return;
+    const jours = Math.floor((today - refDate) / 86400000);
+    if(jours >= delai) { v.archived=true; v.dateArchive=today.toISOString().split('T')[0]; changed=true; }
+  });
+  if(changed) save();
+}
+function setPipelineView(v) { pipelineView=v; renderPipeline(); }
 function renderPipeline() {
   const el=document.getElementById('pipeline-cols'); if(!el) return;
+  // Toolbar
+  const tb=document.getElementById('pipeline-toolbar');
+  if(tb){
+    const nArc=state.ventes.filter(v=>v.archived).length;
+    const nActifs=state.ventes.filter(v=>!v.archived).length;
+    const btnStyle=(active,col)=>`padding:6px 16px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;font-family:inherit;`+(active?`background:${col};color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15);`:`background:var(--surface3);color:var(--text2);border:1px solid var(--border2);`);
+    tb.innerHTML=`
+      <button onclick="setPipelineView('actifs')" style="${btnStyle(pipelineView==='actifs','var(--accent)')}">🟢 Actifs (${nActifs})</button>
+      <button onclick="setPipelineView('archives')" style="${btnStyle(pipelineView==='archives','#6e6e73')}">📦 Archives (${nArc})</button>
+      ${pipelineView==='archives'?`<span style="font-size:11px;color:var(--text3);margin-left:4px;">Archivage auto : Vendu 30j · Perdu 14j · Contrat envoyé 30j · Contrat à relancer 45j · Autres 60j</span>`:''}`;
+  }
   el.innerHTML=ETAPES.map(etape=>{
-    const cards=state.ventes.filter(v=>v.etape===etape);
+    const cards=state.ventes.filter(v=>v.etape===etape && (pipelineView==='archives'?v.archived===true:!v.archived));
     const total=cards.reduce((s,v)=>s+v.montant,0);
     const color=ETAPE_COLOR[etape]||'var(--accent)';
     // Default: collapsed if 0 cards, open otherwise
@@ -2562,17 +2682,18 @@ function renderPipeline() {
         const contact=v.contactId?state.clients.find(x=>x.id===v.contactId):null;
         const desc=v.notes||(contact?contact.notes:'')||'';
         const tel=v.tel||(contact?contact.tel:'')||'';
-        return `<div class="pipe-card" onclick="showVenteDetail(${v.id})">
+        return `<div class="pipe-card${v.archived?' pipe-card-archived':''}" onclick="showVenteDetail(${v.id})" style="${v.archived?'opacity:.75;border-style:dashed;':''}">
           <div class="pipe-card-body">
-            <div class="pipe-card-name">${v.nom}</div>
+            <div class="pipe-card-name">${v.nom}${v.archived?'<span style="font-size:9px;color:#6e6e73;font-weight:400;margin-left:4px;">📦 archivé</span>':''}</div>
             <div class="pipe-card-sub">${[v.type,v.dims].filter(Boolean).join(' · ')||'—'}</div>
             ${desc?`<div class="pipe-card-desc">💬 ${desc}</div>`:''}
             ${v.adresse?`<div style="font-size:10px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 ${v.adresse}</div>`:''}
             ${v.date?`<div style="font-size:10px;color:${color};margin-top:2px;">📅 ${v.date}</div>`:''}
-            <div class="relance-row" onclick="event.stopPropagation()">
+            ${v.dateArchive?`<div style="font-size:10px;color:#6e6e73;margin-top:2px;">📦 ${v.dateArchive}</div>`:''}
+            ${!v.archived?`<div class="relance-row" onclick="event.stopPropagation()">
               <label class="relance-cb ${v.relance1?'done':''}"><input type="checkbox" ${v.relance1?'checked':''} onchange="toggleRelanceCb(${v.id},1,this.checked)"> R1</label>
               <label class="relance-cb ${v.relance2?'done':''}"><input type="checkbox" ${v.relance2?'checked':''} onchange="toggleRelanceCb(${v.id},2,this.checked)"> R2</label>
-            </div>
+            </div>`:''}
           </div>
           <div class="pipe-card-right">
             ${v.montant?`<span class="pipe-card-amt">${v.montant.toLocaleString('fr-CA')} $</span>`:''}
@@ -2610,14 +2731,29 @@ function showVenteDetail(id) {
       <div class="detail-row"><span class="dlabel">Date relance</span><span class="dvalue">${v.relance||'—'}</span></div>
     </div>
     ${v.notes?`<div class="detail-sec"><h4>Notes</h4><p style="font-size:13px;line-height:1.6;color:var(--text2);white-space:pre-line;">${v.notes}</p></div>`:''}
+    ${v.archived?`<div style="background:rgba(110,110,115,.08);border:1px solid rgba(110,110,115,.2);border-radius:10px;padding:10px 14px;margin-top:18px;font-size:12px;color:#6e6e73;">📦 Archivé le ${v.dateArchive||'—'} — Ce client n'apparaît plus dans le pipeline actif.</div>`:''}
     <div style="display:flex;gap:8px;margin-top:22px;flex-wrap:wrap;">
       <button class="btn btn-ghost btn-sm" id="btn-ev">✏️ Modifier</button>
       <button class="btn btn-danger btn-sm" id="btn-dv">🗑️ Supprimer</button>
-      <button class="btn btn-ghost btn-sm" id="btn-pdfv" onclick="">📄 Export PDF</button>
+      <button class="btn btn-ghost btn-sm" id="btn-pdfv">📄 Export PDF</button>
+      ${v.archived
+        ? `<button class="btn btn-ghost btn-sm" id="btn-restore-v" style="color:var(--accent);border-color:rgba(52,199,89,.4);">♻️ Restaurer</button>`
+        : `<button class="btn btn-ghost btn-sm" id="btn-archive-v" style="color:#6e6e73;">📦 Archiver</button>`}
     </div>`;
   document.getElementById('btn-ev').onclick=()=>{ openVenteModal(v.id); closeDetail('detail-vente'); };
   document.getElementById('btn-dv').onclick=()=>deleteVente(v.id);
   document.getElementById('btn-pdfv').onclick=()=>exportVentePDF(v.id);
+  if(v.archived){
+    document.getElementById('btn-restore-v').onclick=()=>{
+      v.archived=false; delete v.dateArchive; save(); closeDetail('detail-vente'); render();
+    };
+  } else {
+    document.getElementById('btn-archive-v').onclick=()=>{
+      if(!confirm('Archiver "'+v.nom+'" ? Il disparaîtra du pipeline actif.')) return;
+      v.archived=true; v.dateArchive=new Date().toISOString().split('T')[0];
+      save(); closeDetail('detail-vente'); render();
+    };
+  }
   document.getElementById('detail-vente').classList.add('open');
 }
 
@@ -2760,6 +2896,7 @@ function updateBadge() {
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
+  autoArchiveCheck();
   renderAujourdhui(); renderDashboard(); renderClients(); renderPipeline(); renderTaches(); renderNotes(); renderFinances(); renderCalendrier(); updateBadge(); renderRelances();
 }
 
@@ -3258,10 +3395,98 @@ function renderVentesCompta(){
 
 function ajouterVenteCompta(){
   if(!state.compta) renderCompta();
-  state.compta.ventes.push({id:cUID(),date:'',contrat:'',client:'Nouveau client',produit:'',total:'0,00',instal:'-',pct:'9',paye:'0,00',source:''});
+  // Ouvrir le modal avec champs vides
+  document.getElementById('cv-pipeline-search').value='';
+  document.getElementById('cv-pipeline-id').value='';
+  document.getElementById('cv-pipeline-badge').style.display='none';
+  document.getElementById('cv-pipeline-dd').style.display='none';
+  document.getElementById('cv-date').value='';
+  document.getElementById('cv-contrat').value='';
+  document.getElementById('cv-client').value='';
+  document.getElementById('cv-produit').value='';
+  document.getElementById('cv-source-modal').value='';
+  document.getElementById('cv-total').value='';
+  document.getElementById('cv-instal').value='-';
+  document.getElementById('cv-pct').value='9';
+  document.getElementById('cv-paye').value='0,00';
+  document.getElementById('modal-compta-vente').classList.add('open');
+}
+
+function cvPipelineSearch(q){
+  const dd=document.getElementById('cv-pipeline-dd');
+  if(!q||q.length<2){ dd.style.display='none'; return; }
+  const ql=q.toLowerCase();
+  // Chercher dans tous les clients du pipeline non archivés et non Vendu
+  const matches=state.ventes.filter(v=>!v.archived && v.etape!=='Vendu' && v.nom.toLowerCase().includes(ql)).slice(0,8);
+  if(!matches.length){ dd.innerHTML='<div style="padding:10px 13px;font-size:13px;color:var(--text3);">Aucun résultat dans le pipeline</div>'; dd.style.display='block'; return; }
+  dd.innerHTML=matches.map(v=>`<div style="padding:10px 13px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:background .1s;" onmousedown="cvSelectPipeline(${v.id})" onmouseover="this.style.background='var(--aglow)'" onmouseout="this.style.background=''">
+    <div style="font-weight:600;">${v.nom}</div>
+    <div style="font-size:11px;color:var(--text2);">${v.etape}${v.montant?' · '+v.montant.toLocaleString('fr-CA')+' $':''}${v.type?' · '+v.type:''}</div>
+  </div>`).join('');
+  dd.style.display='block';
+}
+
+function cvSelectPipeline(id){
+  const v=state.ventes.find(x=>x.id===id); if(!v) return;
+  document.getElementById('cv-pipeline-id').value=id;
+  document.getElementById('cv-pipeline-search').value='';
+  document.getElementById('cv-pipeline-dd').style.display='none';
+  const badge=document.getElementById('cv-pipeline-badge');
+  document.getElementById('cv-pipeline-badge-text').textContent='✅ Lié : '+v.nom+(v.etape?' ('+v.etape+')':'');
+  badge.style.display='flex';
+  // Pré-remplir les champs depuis le pipeline
+  const today=new Date();
+  const mois=['janv','fév','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+  if(!document.getElementById('cv-date').value)
+    document.getElementById('cv-date').value=today.getDate()+'-'+mois[today.getMonth()];
+  if(!document.getElementById('cv-client').value) document.getElementById('cv-client').value=v.nom;
+  if(!document.getElementById('cv-produit').value) document.getElementById('cv-produit').value=v.type||'';
+  if(!document.getElementById('cv-total').value && v.montant)
+    document.getElementById('cv-total').value=v.montant.toLocaleString('fr-CA',{minimumFractionDigits:2,maximumFractionDigits:2}).replace('.',',');
+  if(!document.getElementById('cv-contrat').value && v.nodevis) document.getElementById('cv-contrat').value=v.nodevis;
+  if(!document.getElementById('cv-source-modal').value && v.source) document.getElementById('cv-source-modal').value=v.source;
+}
+
+function cvClearPipeline(){
+  document.getElementById('cv-pipeline-id').value='';
+  document.getElementById('cv-pipeline-search').value='';
+  document.getElementById('cv-pipeline-badge').style.display='none';
+}
+
+function saveComptaVente(){
+  const client=document.getElementById('cv-client').value.trim();
+  if(!client){ alert('Le nom du client est requis.'); return; }
+  const entry={
+    id:cUID(),
+    date:document.getElementById('cv-date').value.trim(),
+    contrat:document.getElementById('cv-contrat').value.trim(),
+    client:client,
+    produit:document.getElementById('cv-produit').value.trim(),
+    total:document.getElementById('cv-total').value.trim()||'0,00',
+    instal:document.getElementById('cv-instal').value.trim()||'-',
+    pct:document.getElementById('cv-pct').value.trim()||'9',
+    paye:document.getElementById('cv-paye').value.trim()||'0,00',
+    source:document.getElementById('cv-source-modal').value.trim()
+  };
+  if(!state.compta) state.compta={ventes:[],hebdo:[],avance:400};
+  if(!state.compta.ventes) state.compta.ventes=[];
+  state.compta.ventes.push(entry);
+  // Lier au pipeline → passer à Vendu
+  const pipelineId=parseInt(document.getElementById('cv-pipeline-id').value);
+  if(pipelineId){
+    const pv=state.ventes.find(x=>x.id===pipelineId);
+    if(pv){
+      pv.etape='Vendu';
+      pv.dateVente=new Date().toISOString().split('T')[0];
+      pv.dateEtape=pv.dateVente;
+      pv.relance1=false; pv.relance2=false;
+      logActivity('Vendu via comptabilité : '+pv.nom,'var(--green)');
+    }
+  }
+  save();
+  closeModal('modal-compta-vente');
   renderVentesCompta();
   renderHebdoCompta();
-  document.querySelectorAll('#compta-ventes-body tr:last-child td')[0].focus();
 }
 
 function buildHebdoCompta(){
