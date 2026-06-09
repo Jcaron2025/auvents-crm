@@ -3223,35 +3223,12 @@ function updateDayEvents() {
 const CMOIS_IDX={janv:0,fev:1,'fév':1,mars:2,avr:3,mai:4,juin:5,juil:6,'août':7,aout:7,sept:8,oct:9,nov:10,'déc':11,dec:11};
 const CMOIS_NOM=['janv','fév','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
 
-const COMPTA_INIT_VENTES=[
-  {id:'cv1', date:'12-janv',contrat:'59853',client:'Chabot, Alicia',  produit:'Garage',         total:'2 147,00',instal:'197,00',pct:'9',paye:'175,50', source:'Internet'},
-  {id:'cv2', date:'12-fév', contrat:'60056',client:'Berthiaume, Victor',produit:'toile remp',   total:'3 050,00',instal:'-',    pct:'9',paye:'274,50', source:'téléphone'},
-  {id:'cv3', date:'16-mars',contrat:'60114',client:'Trottier, Mario', produit:'Rideaux rempl',  total:'445,00',  instal:'-',    pct:'9',paye:'40,05',  source:'téléphone'},
-  {id:'cv4', date:'16-mars',contrat:'60148',client:'Kelly, Claude',   produit:'toile remp',     total:'2 583,00',instal:'-',    pct:'9',paye:'232,47', source:'personne'},
-  {id:'cv5', date:'24-mars',contrat:'60186',client:'Lortie, Richard', produit:'remp toit vinyle',total:'1 425,00',instal:'200,00',pct:'9',paye:'110,25',source:''},
-  {id:'cv6', date:'24-mars',contrat:'60187',client:'Lortie, Richard', produit:'mur',            total:'780,00',  instal:'-',    pct:'9',paye:'70,20',  source:''},
-  {id:'cv7', date:'26-mars',contrat:'60209',client:'Construction Rancourt',produit:'auvent porte',total:'9 855,00',instal:'1 700,00',pct:'9',paye:'733,95',source:''},
-  {id:'cv8', date:'01-avr', contrat:'60268',client:'Magman, Jaques',  produit:'auvent fenetre', total:'695,00',  instal:'-',    pct:'9',paye:'62,55',  source:''},
-  {id:'cv9', date:'02-avr', contrat:'60333',client:'Naturmania',      produit:'mur',            total:'1 065,00',instal:'-',    pct:'9',paye:'95,85',  source:''},
-  {id:'cv10',date:'09-avr', contrat:'60411',client:'Marc Paradis',    produit:'Portique toile', total:'800,00',  instal:'-',    pct:'9',paye:'72,00',  source:''},
-  {id:'cv11',date:'07-avr', contrat:'60373',client:'Carole Lefevre',  produit:'portique toile', total:'1 675,00',instal:'-',    pct:'9',paye:'150,75', source:''},
-];
+// ⚠️ CONFIDENTIALITÉ : aucune vraie donnée client n'est gardée dans le code.
+// Chaque comptabilité est stockée par utilisateur dans Firebase (users/{uid}/data/crm).
+// Un nouveau compte démarre donc avec une comptabilité vide.
+const COMPTA_INIT_VENTES=[];
 
-const COMPTA_INIT_HEBDO=[
-  {semaine:'04-janv',salaire:'0,00',  autre:'0,00',detail:''},
-  {semaine:'11-janv',salaire:'400,00',autre:'0,00',detail:'Partagé 50%'},
-  {semaine:'18-janv',salaire:'400,00',autre:'0,00',detail:''},
-  {semaine:'25-janv',salaire:'400,00',autre:'0,00',detail:''},
-  {semaine:'01-fév', salaire:'400,00',autre:'0,00',detail:''},
-  {semaine:'08-fév', salaire:'400,00',autre:'0,00',detail:''},
-  {semaine:'15-fév', salaire:'400,00',autre:'0,00',detail:''},
-  {semaine:'22-fév', salaire:'400,00',autre:'0,00',detail:''},
-  {semaine:'01-mars',salaire:'400,00',autre:'0,00',detail:''},
-  {semaine:'08-mars',salaire:'800,00',autre:'0,00',detail:''},
-  {semaine:'15-mars',salaire:'800,00',autre:'0,00',detail:''},
-  {semaine:'22-mars',salaire:'800,00',autre:'0,00',detail:''},
-  {semaine:'29-mars',salaire:'800,00',autre:'0,00',detail:''},
-];
+const COMPTA_INIT_HEBDO=[];
 
 function cParseDate(str){
   if(!str) return null;
