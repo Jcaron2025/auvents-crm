@@ -1324,7 +1324,6 @@ function subscribeData(){
 function save(){
   if(!currentUser) return;
   const ref=db.collection('users').doc(currentUser.uid).collection('data').doc('crm');
-  // Strip map cache before saving
   const toSave={
     clients:state.clients,
     ventes:state.ventes.map(v=>{const c={...v};delete c._lat;delete c._lon;return c;}),
@@ -1333,9 +1332,22 @@ function save(){
     documents:state.documents||[],
     activity:state.activity,
     objectifs:state.objectifs,
-    compta:state.compta||{ventesData:{},hebdo:[],avance:400}
+    compta:state.compta||{ventes:[],hebdo:[],avance:400}
   };
-  ref.set(toSave).catch(e=>console.error('Save error:',e));
+  ref.set(toSave).catch(e=>{
+    console.error('Save error:',e);
+    showToast('❌ Erreur de sauvegarde : ' + (e.code==='permission-denied' ? 'Accès refusé. Contactez l\'administrateur.' : e.message), 'error');
+  });
+}
+function showToast(msg, type){
+  let t=document.getElementById('save-toast');
+  if(!t){ t=document.createElement('div'); t.id='save-toast'; t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.15);transition:opacity .3s;pointer-events:none;'; document.body.appendChild(t); }
+  t.textContent=msg;
+  t.style.background=type==='error'?'#ff3b30':'#34c759';
+  t.style.color='#fff';
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.style.opacity='0',3500);
 }
 function load(){ /* handled by subscribeData */ }
 function logActivity(msg, color) {
