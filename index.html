@@ -999,7 +999,7 @@ textarea.form-control{min-height:80px;resize:vertical;line-height:1.6;}
       <button onclick="cvClearPipeline()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;line-height:1;">×</button>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Date</label><input class="form-control" id="cv-date" placeholder="ex: 15-mai"/></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-control" id="cv-date" placeholder="ex: 15-mai, 08-juillet ou 08-07"/></div>
       <div class="form-group"><label class="form-label">No. devis</label><input class="form-control" id="cv-contrat" placeholder="ex: 60450"/></div>
     </div>
     <div class="form-group"><label class="form-label">Client</label><input class="form-control" id="cv-client" placeholder="Nom, Prénom"/></div>
@@ -3232,8 +3232,17 @@ function updateDayEvents() {
 }
 
 // ─── COMPTABILITÉ ─────────────────────────────────────────────────────────────
-const CMOIS_IDX={janv:0,fev:1,'fév':1,mars:2,avr:3,mai:4,juin:5,juil:6,'août':7,aout:7,sept:8,oct:9,nov:10,'déc':11,dec:11};
+const CMOIS_FULL=['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
 const CMOIS_NOM=['janv','fév','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+// Accepte : nom complet (juillet), abréviation (juil, jui, sept, déc), avec ou sans accent/point, ou numéro (07).
+function cMoisIdx(s){
+  s=String(s||'').trim().toLowerCase().replace(/[\u00e0-\u00e5]/g,'a').replace(/[\u00e8-\u00eb]/g,'e').replace(/[\u00ec-\u00ef]/g,'i').replace(/[\u00f2-\u00f6]/g,'o').replace(/[\u00f9-\u00fc]/g,'u').replace(/[^a-z0-9]/g,'');
+  if(!s) return undefined;
+  if(/^\d{1,2}$/.test(s)){ const n=parseInt(s,10); return (n>=1&&n<=12)?n-1:undefined; }
+  const hits=[];
+  for(let i=0;i<CMOIS_FULL.length;i++){ if(CMOIS_FULL[i].startsWith(s)) hits.push(i); }
+  return hits.length===1?hits[0]:undefined;
+}
 
 // ⚠️ CONFIDENTIALITÉ : aucune vraie donnée client n'est gardée dans le code.
 // Chaque comptabilité est stockée par utilisateur dans Firebase (users/{uid}/data/crm).
@@ -3245,11 +3254,16 @@ const COMPTA_INIT_HEBDO=[];
 function cParseDate(str){
   if(!str) return null;
   if(/^\d{4}-\d{2}-\d{2}/.test(str)){ const d=new Date(str+'T12:00:00'); return isNaN(d)?null:d; }
-  const p=str.trim().toLowerCase().split('-');
+  const p=str.trim().toLowerCase().split(/[-\/\s]+/).filter(Boolean);
   if(p.length<2) return null;
-  const day=parseInt(p[0]), m=CMOIS_IDX[p.slice(1).join('-')];
-  if(m===undefined||isNaN(day)) return null;
-  return new Date(2026,m,day);
+  const day=parseInt(p[0],10);
+  // Année optionnelle en 3e position : 08-juillet-2025
+  let year=2026;
+  let moisParts=p.slice(1);
+  if(moisParts.length>1&&/^\d{4}$/.test(moisParts[moisParts.length-1])){ year=parseInt(moisParts.pop(),10); }
+  const m=cMoisIdx(moisParts.join(''));
+  if(m===undefined||isNaN(day)||day<1||day>31) return null;
+  return new Date(year,m,day);
 }
 function cGetSunday(d){ const dt=new Date(d); const dow=dt.getDay(); dt.setDate(dt.getDate()+(dow===0?0:7-dow)); return dt; }
 function cFmtDate(d){ return String(d.getDate()).padStart(2,'0')+'-'+CMOIS_NOM[d.getMonth()]; }
@@ -3446,8 +3460,8 @@ function saveComptaVente(){
   const client=document.getElementById('cv-client').value.trim();
   if(!client){ alert('Le nom du client est requis.'); return; }
   const dateVal=document.getElementById('cv-date').value.trim();
-  if(!dateVal){ alert('La date est requise (ex: 15-mai).'); return; }
-  if(!cParseDate(dateVal)){ alert('Format de date invalide. Utilisez le format: 15-mai'); return; }
+  if(!dateVal){ alert('La date est requise (ex: 15-mai, 08-juillet ou 08-07).'); return; }
+  if(!cParseDate(dateVal)){ alert('Format de date invalide.\n\nExemples acceptés : 15-mai, 08-juillet, 08-07, 2026-07-08'); return; }
   const entry={
     id:cUID(),
     date:dateVal,
@@ -3561,9 +3575,9 @@ function deleteSemaine(i){
 }
 
 function ajouterSemaine(){
-  const sem=prompt('Date du dimanche fin de semaine (ex: 06-avr)');
+  const sem=prompt('Date du dimanche fin de semaine (ex: 06-avr, 12-juillet ou 12-07)');
   if(!sem) return;
-  if(!cParseDate(sem.trim())){ alert('Format invalide. Exemple: 06-avr'); return; }
+  if(!cParseDate(sem.trim())){ alert('Format de date invalide.\n\nExemples acceptés : 06-avr, 12-juillet, 12-07'); return; }
   if(!state.compta.hebdo) state.compta.hebdo=[];
   state.compta.hebdo.push({semaine:sem.trim(),salaire:'0,00',autre:'0,00',detail:''});
   renderHebdoCompta(); save();
