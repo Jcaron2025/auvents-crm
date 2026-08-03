@@ -3445,9 +3445,12 @@ function cvClearPipeline(){
 function saveComptaVente(){
   const client=document.getElementById('cv-client').value.trim();
   if(!client){ alert('Le nom du client est requis.'); return; }
+  const dateVal=document.getElementById('cv-date').value.trim();
+  if(!dateVal){ alert('La date est requise (ex: 15-mai).'); return; }
+  if(!cParseDate(dateVal)){ alert('Format de date invalide. Utilisez le format: 15-mai'); return; }
   const entry={
     id:cUID(),
-    date:document.getElementById('cv-date').value.trim(),
+    date:dateVal,
     contrat:document.getElementById('cv-contrat').value.trim(),
     client:client,
     produit:document.getElementById('cv-produit').value.trim(),
@@ -3472,25 +3475,38 @@ function saveComptaVente(){
       logActivity('Vendu via comptabilité : '+pv.nom,'var(--green)');
     }
   }
-  save();
   closeModal('modal-compta-vente');
   renderVentesCompta();
   renderHebdoCompta();
+  save();
 }
 
 function buildHebdoCompta(){
   const avance=parseFloat(document.getElementById('compta-avance').value)||400;
   const ventes=state.compta.ventes||[];
   const byWeek={};
+  let minSun=null,maxSun=null;
   ventes.forEach(v=>{
     const d=cParseDate(v.date); if(!d) return;
-    const key=cFmtDate(cGetSunday(d));
+    const sun=cGetSunday(d);
+    const key=cFmtDate(sun);
     if(!byWeek[key]) byWeek[key]={vente:0,comm:0};
     const instal=cParseMontant(v.instal);
     const pct=cParseMontant(v.pct)||9;
     byWeek[key].vente+=cParseMontant(v.total);
     byWeek[key].comm+=((cParseMontant(v.total)-instal)*(pct/100));
+    if(!minSun||sun<minSun) minSun=new Date(sun);
+    if(!maxSun||sun>maxSun) maxSun=new Date(sun);
   });
+  // Ajouter toutes les semaines entre la première et la dernière vente (sans ventes = 0)
+  if(minSun&&maxSun){
+    let cur=new Date(minSun);
+    while(cur<=maxSun){
+      const key=cFmtDate(cur);
+      if(!byWeek[key]) byWeek[key]={vente:0,comm:0};
+      cur=new Date(cur); cur.setDate(cur.getDate()+7);
+    }
+  }
 
   const hebdo=state.compta.hebdo||[];
   const existingKeys=new Set(hebdo.map(h=>{ const d=cParseDate(h.semaine); return d?cFmtDate(d):h.semaine; }));
@@ -3541,15 +3557,16 @@ function renderHebdoCompta(){
 
 function deleteSemaine(i){
   if(!confirm('Supprimer cette semaine?')) return;
-  state.compta.hebdo.splice(i,1); renderHebdoCompta();
+  state.compta.hebdo.splice(i,1); renderHebdoCompta(); save();
 }
 
 function ajouterSemaine(){
   const sem=prompt('Date du dimanche fin de semaine (ex: 06-avr)');
   if(!sem) return;
+  if(!cParseDate(sem.trim())){ alert('Format invalide. Exemple: 06-avr'); return; }
   if(!state.compta.hebdo) state.compta.hebdo=[];
   state.compta.hebdo.push({semaine:sem.trim(),salaire:'0,00',autre:'0,00',detail:''});
-  renderHebdoCompta();
+  renderHebdoCompta(); save();
 }
 
 function saveCompta(){
